@@ -333,6 +333,7 @@ $
 $
 \begin{align*}
 \Leftrightarrow \sigma'{(x)} &= (\sigma{(x)})(1 - \sigma{(x)})
+\numberthis \label{sigmoid_derivative}
 \end{align*}
 We will use this formula for the derivative of the sigmoid function in the derivation below.
 
@@ -348,7 +349,34 @@ The Convolutional Neural Network that we will use in this paper is described in 
 \end{center}
 
 \section{Deriving Feed Forward and Back Propagation}
-\subsection{Initialization of Parameters}
+\subsection{Parameters Initialization}
+\subsubsection{Convolutional Layer 1}
+$\forall p \in [6]$, $\bm{K}^1_{1,p}$ is a $(5 \times 5)$ matrix and $b^1_p$ is a $(1 \times 1)$ scalar, initialized as:
+\begin{align*}
+    \bm{K}^1_{1,p} &\sim U\left(\pm \sqrt{\frac{6}{(1 + 6) \times 5^2}}\right)
+    \numberthis
+    \\
+    b^1_p &= 0
+    \numberthis
+\end{align*}
+\subsubsection{Convolutional Layer 2}
+$\forall p \in [6], q \in [12]$, $\bm{K}^2_{p,q}$ is a $(5 \times 5)$ matrix and $b^2_q$ is a $(1 \times 1)$ scalar, initialized as:
+\begin{align*}
+    \bm{K}^2_{p,q} &\sim U\left(\pm \sqrt{\frac{6}{(6 + 12) \times 5^2}}\right)
+    \numberthis
+    \\
+    b^2_q &= 0
+    \numberthis
+\end{align*}
+\subsubsection{Fully Connected Layer}
+$\bm{W}$ is a $(10 \times 192)$ matrix and $\vec{b}$ is a $(10 \times 1)$ scalar, initialized as:
+\begin{align*}
+    \bm{W} &\sim U\left(\pm \sqrt{\frac{6}{192 + 10}}\right)
+    \numberthis
+    \\
+    \vec{b} &= \vec{0}
+    \numberthis
+\end{align*}
 
 \subsection{Feed Forward}
 \subsubsection{Convolutional Layer 1: $\textbf{\textit{I}} \rightarrow \textbf{\textit{C}}^1_\sigma$}
@@ -363,9 +391,16 @@ The Convolutional Neural Network that we will use in this paper is described in 
 
 $\forall p \in [6]$, we have:
 \begin{align*}
-    \bm{C}^1_p &= \bm{I} \star \bm{K}^1_{1, p} + \bm{B}^1_p\\
-    \Leftrightarrow \bm{C}^1_p(i, j) &= \sum_{u = 0}^4\sum_{v = 0}^4\Big(\bm{I}(i + u, j + v)\bm{K}^1_{1,p}(u, v)\Big) + b^1_p \quad \forall i, j \in [24]\\
+    \bm{C}^1_p &= \bm{I} \star \bm{K}^1_{1, p} + \bm{B}^1_p
+    \numberthis \label{C1}
+    \\
+    \Leftrightarrow \bm{C}^1_p(i, j) &= \sum_{u = 0}^3\sum_{v = 0}^3\Big(\bm{I}(i + u, j + v)\bm{K}^1_{1,p}(u, v)\Big) + b^1_p \quad \forall i, j \in [24]
+    \numberthis \label{C1_indexbased}
+    \\
+    &\quad(\text{based on correlation equation } \eqref{correlation})
+    \\
     \bm{C}^1_{\sigma, p} &= \sigma(\bm{C}^1_p)
+    \numberthis \label{C1_sigma}
 \end{align*}
 
 \subsubsection{Pooling Layer 1: $\textbf{\textit{C}}^1_\sigma \rightarrow \textbf{\textit{S}}^1$}
@@ -378,6 +413,7 @@ $\forall p \in [6]$, we have:
 $\forall p \in [6]$, we have:
 \begin{align*}
     \bm{S}^1_p(i, j) = \frac{1}{4}\sum_{u = 0}^1\sum_{v = 0}^1\bm{C}^1_{\sigma, p}(2i + u, 2j + v) \quad \forall i, j \in [12]
+    \numberthis \label{S1}
 \end{align*}
 
 \subsubsection{Convolutional Layer 2: $\textbf{\textit{S}}^1 \rightarrow \textbf{\textit{C}}^2_\sigma$}
@@ -392,9 +428,16 @@ $\forall p \in [6]$, we have:
 
 $\forall q \in [12]$, we have:
 \begin{align*}
-    \bm{C}^2_q &= \sum_{p = 0}^5\Big(\bm{S}^1_p \star  \bm{K}^2_{p, q}\Big) + \bm{B}^2_q\\
-    \Leftrightarrow \bm{C}^2_q(i, j) &= \sum_{p = 0}^5\left(\sum_{u = 0}^4\sum_{v = 0}^4\bm{S}^1_p(i + u, j + v)\bm{K}^2_{p, q}(u, v)\right) + b^2_q \quad \forall i, j \in [8]\\
+    \bm{C}^2_q &= \sum_{p = 0}^5\Big(\bm{S}^1_p \star  \bm{K}^2_{p, q}\Big) + \bm{B}^2_q
+    \numberthis \label{C2}
+    \\
+    \Leftrightarrow \bm{C}^2_q(i, j) &= \sum_{p = 0}^5\left(\sum_{u = 0}^3\sum_{v = 0}^3\bm{S}^1_p(i + u, j + v)\bm{K}^2_{p, q}(u, v)\right) + b^2_q \quad \forall i, j \in [8]
+    \numberthis \label{C2_indexbased}
+    \\
+    &\quad(\text{based on correlation equation } \eqref{correlation})
+    \\
     \bm{C}^2_{\sigma, q} &= \sigma(\bm{C}^2_q)
+    \numberthis \label{C2_sigma}
 \end{align*}
 
 \subsubsection{Pooling Layer 2: $\textbf{\textit{C}}^2_\sigma \rightarrow \textbf{\textit{S}}^2$}
@@ -405,6 +448,7 @@ $\forall q \in [12]$, we have:
 $\forall q \in [12]$, we have:
 \begin{align*}
     \bm{S}^2_q(i, j) = \frac{1}{4}\sum_{u = 0}^1\sum_{v = 0}^1\bm{C}^2_{\sigma, q}(2i + u, 2j + v) \quad \forall i, j \in [4]
+    \numberthis \label{S2}
 \end{align*}
 
 \subsubsection{Vectorization and Concatenation: $\textbf{\textit{S}}^2 \rightarrow \vec{v}$}
@@ -412,16 +456,38 @@ $\forall q \in [12]$, we have:
     \bm{S}^2_q, q \in [12]:& \text{ input}, 4 \times 4 \text{ matrix}\\
     \vec{v}:& \text{ output}, 192 \times 1 \text{ vector}
 \end{align*}
-We first vectorize each matrix $S^2_q$.\\
+$S^2_q$ is an array of kernels. To visualize $S^2_q$, let's pretend that it has only 2 kernels, each of which is of size $2 \times 2$:
+\begin{align*}
+    \begin{pmatrix}
+        \begin{pmatrix}
+        1 & 2\\
+        3 & 4
+        \end{pmatrix}\\
+        \begin{pmatrix}
+        5 & 6\\
+        7 & 8
+        \end{pmatrix}
+    \end{pmatrix}
+\end{align*}
+After vectorizing $S^2_q$, we want to get:
+\begin{align*}
+    \begin{pmatrix}
+        1 \\ 2 \\ 3 \\ 4 \\ 5 \\ 6 \\ 7 \\ 8
+    \end{pmatrix}
+\end{align*}
+This is equivalent to "unrolling" each kernel in $S^2_q$ into a vector by going row by row, then combined the unrolled kernel into a long vector.\\
+Now, let's define the concrete formula for this operation. We first vectorize each matrix $S^2_q$.\\
 $\forall q \in [12]$, we have:
 \begin{align*}
     \vec{v}_q &= \begin{pmatrix} | \\ \bm{S}^2_q(0, :)\top \\ | \\ ... \\ | \\ \bm{S}^2_q(3, :)^\top \\ | \end{pmatrix}\\
-    \Leftrightarrow \vec{v}_q(4i + j) &= \bm{S}^2_q(i, j) \quad \forall i, j \in [4]\\
+    \Leftrightarrow \vec{v}_q(4i + j) &= \bm{S}^2_q(i, j) \quad \forall i, j \in [4]
+    \numberthis \label{vectorization}
 \end{align*}
 Now, we will concatenate the vectorized matrices into one long matrix.
 \begin{align*}
     \vec{v} &= \begin{pmatrix} | \\ \vec{v}_1 \\ | \\ ... \\ | \\ \vec{v}_{12} \\ | \end{pmatrix}\\
     \Leftrightarrow \vec{v}(16q + 4i + j) &= \bm{S}^2_q(i, j) \quad \forall q \in [12], \forall i, j \in [4]
+    \numberthis \label{concatenation}
 \end{align*}
 
 \subsubsection{Fully Connected Layer: $\vec{v} \rightarrow \vec{\hat{y}}_\sigma$}
@@ -433,10 +499,15 @@ Now, we will concatenate the vectorized matrices into one long matrix.
     \vec{\hat{y}_\sigma}:& \text{ output after non-linearity}, 10 \times 1 \text{ vector}
 \end{align*}
 \begin{align*}
-    \vec{\hat{y}} &= \bm{W}\vec{v} + \vec{b}\\
+    \vec{\hat{y}} &= \bm{W}\vec{v} + \vec{b}
+    \numberthis \label{y_hat}
+    \\
     \Leftrightarrow
-    \vec{\hat{y}}(i) &= \sum_{j = 0}^{191}\Big(\bm{W}(i, j)\vec{v}(j)\Big) + \vec{b}(i)\\
+    \vec{\hat{y}}(i) &= \sum_{j = 0}^{191}\Big(\bm{W}(i, j)\vec{v}(j)\Big) + \vec{b}(i)
+    \numberthis \label{y_hat_indexbased}
+    \\
     \vec{\hat{y}}_\sigma &= \sigma(\hat{y})
+    \numberthis \label{y_hat_sigma}
 \end{align*}
 
 \subsection{Loss Evaluation}
@@ -447,6 +518,7 @@ Now, we will concatenate the vectorized matrices into one long matrix.
 \end{align*}
 \begin{align*}
     L = \frac{1}{2} \norm{\vec{\hat{y}}_\sigma - \vec{y}}^2 =  \frac{1}{2}\sum_{i=0}^{9}(\vec{\hat{y}}_\sigma(i) - \vec{y}(i))^2
+    \numberthis \label{loss}
 \end{align*}
 
 \subsection{Back Propagation}
@@ -460,19 +532,24 @@ Now, we will concatenate the vectorized matrices into one long matrix.
     {\vec{y}}:& \text{ actual labels}, 10 \times 1 \text{ vector}
 \end{align*}
 \begin{align*}
-\Delta{\vec{\hat{y}}_\sigma}(i)
-&= \frac{\partial{L}}{\partial{\vec{\hat{y}}_\sigma}(i)}\\
-&= \frac{\partial}{\partial{\vec{\hat{y}}_\sigma}(i)}\left(\frac{1}{2}\sum_{\Tilde{i}=0}^{9}(\vec{\hat{y}}_\sigma(\Tilde{i}) - \vec{y}(\Tilde{i}))^2\right)\\
-&= \frac{1}{2}\sum_{\Tilde{i}=0}^{9}\left(\frac{\partial}{\partial{\vec{\hat{y}}_\sigma}(i)}(\vec{\hat{y}}_\sigma(\Tilde{i}) - \vec{y}(\Tilde{i}))^2\right)\\
-\intertext{Note that:}
-\frac{\partial}{\partial{\vec{\hat{y}}_\sigma}(i)}(\vec{\hat{y}}_\sigma(\Tilde{i}) - \vec{y}(\Tilde{i}))^2 &=
-\begin{cases}
-    0\quad \text{if } \Tilde{i} \not = i\\
-    2\vec{\hat{y}}_\sigma(i) - \vec{y}(i) \quad \text{if } \Tilde{i} = i\\
-\end{cases}
-\intertext{Therefore:}
-\Delta{\vec{\hat{y}}_\sigma}(i) &= \vec{\hat{y}}_\sigma(i) - \vec{y}(i)
-\numberthis\label{delta_y_hat_sigma}
+    \Delta{\vec{\hat{y}}_\sigma}(i)
+    &= \frac{\partial{L}}{\partial{\vec{\hat{y}}_\sigma}(i)}
+    \\
+    &= \frac{\partial}{\partial{\vec{\hat{y}}_\sigma}(i)}\left(\frac{1}{2}\sum_{\Tilde{i}=0}^{9}(\vec{\hat{y}}_\sigma(\Tilde{i}) - \vec{y}(\Tilde{i}))^2\right)
+    \\
+    &\quad (\text{based on loss equation } \eqref{loss})
+    \\
+    &= \frac{1}{2}\sum_{\Tilde{i}=0}^{9}\left(\frac{\partial}{\partial{\vec{\hat{y}}_\sigma}(i)}(\vec{\hat{y}}_\sigma(\Tilde{i}) - \vec{y}(\Tilde{i}))^2\right)
+    \\
+    \intertext{Note that:}
+    \frac{\partial}{\partial{\vec{\hat{y}}_\sigma}(i)}(\vec{\hat{y}}_\sigma(\Tilde{i}) - \vec{y}(\Tilde{i}))^2 &=
+    \begin{cases}
+        2\vec{\hat{y}}_\sigma(i) - \vec{y}(i) \quad \text{if } \Tilde{i} = i\\
+        0\quad \text{if } \Tilde{i} \not = i\\
+    \end{cases}
+    \intertext{Therefore:}
+    \Delta{\vec{\hat{y}}_\sigma}(i) &= \vec{\hat{y}}_\sigma(i) - \vec{y}(i)
+    \numberthis\label{delta_y_hat_sigma}
 \end{align*}
 
 \item Calculating $\Delta{\vec{\hat{y}}}$
@@ -482,34 +559,59 @@ Now, we will concatenate the vectorized matrices into one long matrix.
     {\vec{\hat{y}}_\sigma}:& \text{ predicted labels after non-linearity}, 10 \times 1 \text{ vector}\\
 \end{align*}
 \begin{align*}
-\Delta{\vec{\hat{y}}}(i)
-&= \frac{\partial{L}}{\partial{\vec{\hat{y}}}(i)}\\
-&= \frac{\partial{L}}{\partial{\vec{\hat{y}}_\sigma}(i)}
-\cdot
-\frac{\partial{\vec{\hat{y}}_\sigma}(i)}{\partial{\vec{\hat{y}}}(i)}
-\\
-&= \Delta{\vec{\hat{y}}_\sigma}(i)
-\cdot
-\vec{\hat{y}_\sigma}(i)(1 - \vec{\hat{y}_\sigma}(i))
+    \Delta{\vec{\hat{y}}}(i)
+    &= \frac{\partial{L}}{\partial{\vec{\hat{y}}}(i)}
+    \\
+    &= \frac{\partial{L}}{\partial{\vec{\hat{y}}_\sigma}(i)}
+    \cdot
+    \frac{\partial{\vec{\hat{y}}_\sigma}(i)}{\partial{\vec{\hat{y}}}(i)}
+    \\
+    &= \Delta{\vec{\hat{y}}_\sigma}(i)
+    \cdot
+    \vec{\hat{y}_\sigma}(i)(1 - \vec{\hat{y}_\sigma}(i))
+    \numberthis \label{delta_y_hat}
+    \\
+    &\quad(\text{based on sigmoid derivative equation } \eqref{sigmoid_derivative})
 \end{align*}
 
 \item Calculating $\Delta \bm{W}$
 \begin{align*}
     \Delta \bm{W}:& \text{ partial w.r.t weights}, 10 \times 192 \text{ matrix}\\
     \Delta{\vec{\hat{y}}}:& \text{ partial w.r.t. predicted labels before non-linearity}, 10 \times 1 \text{ vector}\\
-    \vec{v}:& \text{ input of fully connected layer}, 192 \times 1 \text{ vector}
+    \vec{v}:& \text{ input of fully connected layer}, 192 \times 1 \text{ vector}\\
 \end{align*}
 \begin{align*}
     \Delta \bm{W}(i, j)
-    &= \frac{\partial{L}}{\partial{\bm{W}(i, j)}}\\
+    &= \frac{\partial{L}}{\partial{\bm{W}(i, j)}}
+    \\
     &= \frac{\partial{L}}{\partial{\vec{\hat{y}}(i)}}
     \cdot
-    \frac{\partial{\vec{\hat{y}}(i)}}{\partial{\bm{W}(i, j)}}\\
+    \frac{\partial{\vec{\hat{y}}(i)}}{\partial{\bm{W}(i, j)}}
+    \\
     &= \Delta{\vec{\hat{y}}}(i)
     \cdot
-    \frac{\partial}{\partial{\bm{W}(i, j)}}\left(\sum_{j = 0}^{191}\Big(\bm{W}(i, j)\vec{v}(j)\Big) + \vec{b}(i)\right)\\
-    &= \Delta{\vec{\hat{y}}}(i) \cdot \vec{v}(j)\\
+    \frac{\partial}{\partial{\bm{W}(i, j)}}\left(\sum_{\Tilde{j} = 0}^{191}\Big(\bm{W}(i, \Tilde{j})\vec{v}(\Tilde{j})\Big) + \vec{b}(i)\right)
+    \\
+    &\quad (\text{based on $\vec{\hat{y}}$ equation } \eqref{y_hat_indexbased})
+    \\
+    &= \Delta{\vec{\hat{y}}}(i)
+    \cdot
+    \sum_{\Tilde{j} = 0}^{191} \left(\frac{\partial}{\partial{\bm{W}(i, j)}}\Big(\bm{W}(i, \Tilde{j})\vec{v}(\Tilde{j})\Big)\right)
+    \\
+    \intertext{Note that:}
+    \frac{\partial}{\partial{\bm{W}(i, j)}}\Big(\bm{W}(i, \Tilde{j})\vec{v}(\Tilde{j})\Big)
+    &=
+    \begin{cases}
+        \vec{v}(j) \quad \text{if } \Tilde{j} = j\\
+        0 \quad \text{if } \Tilde{j} \not = j\\
+    \end{cases}
+    \\
+    \intertext{Therefore:}
+    \Delta \bm{W}(i, j)
+    &= \Delta{\vec{\hat{y}}}(i) \cdot \vec{v}(j)
+    \\
     \Rightarrow \Delta \bm{W} &= \Delta{\vec{\hat{y}}} \cdot \vec{v}^\top
+    \numberthis \label{delta_W}
 \end{align*}
 
 \item Calculating $\Delta \vec{b}$
@@ -519,15 +621,22 @@ Now, we will concatenate the vectorized matrices into one long matrix.
 \end{align*}
 \begin{align*}
     \Delta \vec{b}(i)
-    &= \frac{\partial{L}}{\partial{\vec{b}(i)}}\\
+    &= \frac{\partial{L}}{\partial{\vec{b}(i)}}
+    \\
     &= \frac{\partial{L}}{\partial{\vec{\hat{y}}(i)}}
     \cdot
-    \frac{\partial{\vec{\hat{y}}(i)}}{\partial{\vec{b}(i)}}\\
+    \frac{\partial{\vec{\hat{y}}(i)}}{\partial{\vec{b}(i)}}
+    \\
     &= \Delta{\vec{\hat{y}}}(i)
     \cdot
-    \frac{\partial}{\partial{\vec{b}(i)}}\left(\sum_{j = 0}^{191}\Big(\bm{W}(i, j)\vec{v}(j)\Big) + \vec{b}(i)\right)\\
-    &= \Delta{\vec{\hat{y}}}(i) \cdot 1\\
+    \frac{\partial}{\partial{\vec{b}(i)}}\left(\sum_{\Tilde{j} = 0}^{191}\Big(\bm{W}(i, \Tilde{j})\vec{v}(\Tilde{j})\Big) + \vec{b}(i)\right)
+    \\
+    &\quad (\text{based on $\vec{\hat{y}}$ equation } \eqref{y_hat_indexbased})
+    \\
+    &= \Delta{\vec{\hat{y}}}(i) \cdot 1
+    \\
     \Rightarrow \Delta \vec{b} &= \Delta{\vec{\hat{y}}}
+    \numberthis \label{delta_B}
 \end{align*}
 
 \end{itemize}
@@ -542,37 +651,60 @@ Now, we will concatenate the vectorized matrices into one long matrix.
 \end{align*}
 \begin{align*}
     \Delta \vec{v}(j)
-    &= \frac{\partial L}{\partial \vec{v}(j)}\\
+    &= \frac{\partial L}{\partial \vec{v}(j)}
+    \\
     &= \sum_{i = 0}^{9}\frac{\partial{L}}{\partial{\vec{\hat{y}}(i)}}
     \cdot
-    \frac{\partial{\vec{\hat{y}}(i)}}{\partial{\vec{v}(j)}}\\
+    \frac{\partial{\vec{\hat{y}}(i)}}{\partial{\vec{v}(j)}}
+    \\
     &= \sum_{i = 0}^{9}\Delta{\vec{\hat{y}}}(i)
     \cdot
-    \frac{\partial}{\partial{\vec{v}(j)}}\left(\sum_{\Tilde{j} = 0}^{191}\Big(\bm{W}(i, \Tilde{j})\vec{v}(\Tilde{j})\Big) + \vec{b}(i)\right)\\
+    \frac{\partial}{\partial{\vec{v}(j)}}\left(\sum_{\Tilde{j} = 0}^{191}\Big(\bm{W}(i, \Tilde{j})\vec{v}(\Tilde{j})\Big) + \vec{b}(i)\right)
+    \\
+    &\quad (\text{based on $\vec{\hat{y}}$ equation } \eqref{y_hat_indexbased})
+    \\
     &= \sum_{i = 0}^{9}\Delta{\vec{\hat{y}}}(i)
     \cdot
-    \frac{\partial}{\partial{\vec{v}(j)}}\left(\sum_{\Tilde{j} = 0}^{191}\Big(\bm{W}(i, \Tilde{j})\vec{v}(\Tilde{j})\Big) + \vec{b}(i)\right)\\
+    \sum_{\Tilde{j} = 0}^{191} \left(\frac{\partial}{\partial{\vec{v}(j)}}\Big(\bm{W}(i, \Tilde{j})\vec{v}(\Tilde{j})\Big)\right)
+    \\
+    \intertext{Note that:}
+    \frac{\partial}{\partial{\vec{v}(j)}}\Big(\bm{W}(i, \Tilde{j})\vec{v}(\Tilde{j})\Big)
+    &=
+    \begin{cases}
+        \bm{W}(i, j) \quad \text{if } \Tilde{j} = j\\
+        0 \quad \text{if } \Tilde{j} \not = j\\
+    \end{cases}
+    \intertext{Therefore:}
+    \Delta \vec{v}(j)
     &= \sum_{i = 0}^{9}\Delta{\vec{\hat{y}}}(i)
     \cdot
     \bm{W}(i, j)\\
     \Rightarrow \Delta \vec{v} &= \bm{W}^\top \cdot \Delta \vec{\hat{y}}
+    \numberthis \label{delta_v}
 \end{align*}
 \end{itemize}
 
 \subsubsection{Pooling Layer 2: $ \textbf{\textit{S}}^2 \rightarrow \textbf{\textit{C}}^2_\sigma$}
-\begin{align*}
-    \Delta \bm{S}^2_q, q \in [12]:& \text{ parital w.r.t output of pooling layer 2}, 4 \times 4 \text{ matrix}\\
-    \Delta\vec{v}:& \text{ partial w.r.t input of fully connected layer}, 192 \times 1 \text{ vector}\\
-\end{align*}
 \begin{itemize}
 \item Calculating $\Delta \textbf{\textit{S}}_q^2$
 \begin{align*}
-    \Delta \vec{v}_q &= \begin{pmatrix} | \\ \Delta \bm{S}^2_q(0, :)^\top \\ | \\ ... \\ | \\ \Delta \bm{S}^2_q(3, :)^\top \\ | \end{pmatrix}\\
+    \Delta \bm{S}^2_q, q \in [12]:& \text{ parital w.r.t output of pooling layer 2}, 4 \times 4 \text{ matrix}\\
+    \Delta\vec{v}:& \text{ partial w.r.t input of fully connected layer}, 192 \times 1 \text{ vector}
+\end{align*}
+\begin{align*}
+    \Delta \vec{v}_q &= \begin{pmatrix} | \\ \Delta \bm{S}^2_q(0, :)^\top \\ | \\ ... \\ | \\ \Delta \bm{S}^2_q(3, :)^\top \\ | \end{pmatrix}
+    \\
     \Leftrightarrow \Delta \bm{S}^2_q(i, j) &= \Delta \vec{v}_q(4i + j) \quad \forall i, j \in [4]
+    \numberthis \label{delta_vectorization}
+    \\
+    &\quad (\text{based on vectorization equation } \eqref{vectorization})
 \end{align*}
 \begin{align*}
     \Delta \vec{v} &= \begin{pmatrix} | \\ \Delta \vec{v}_1 \\ | \\ ... \\ | \\ \Delta \vec{v}_{12} \\ | \end{pmatrix}\\
     \Leftrightarrow \Delta \bm{S}^2_q(i, j) &= \Delta \vec{v}(16q + 4i + j) \quad \forall q \in [12], \forall i, j \in [4]
+    \numberthis \label{delta_concatenation}
+    \\
+    &\quad (\text{based on concatenation equation } \eqref{concatenation})
 \end{align*}
 \end{itemize}
 
@@ -581,17 +713,27 @@ Now, we will concatenate the vectorized matrices into one long matrix.
 \item Calculating $\Delta \textbf{\textit{C}}_{\sigma, q}^2$
 \begin{align*}
     \Delta \bm{C}_{\sigma, q}^2, q \in [12]:& \text{ parital w.r.t output of convolutional layer 2} \\& \text{ after non-linearity}, 8 \times 8 \text{ matrix}\\
-    \Delta \bm{S}^2_q, q \in [12]:& \text{ parital w.r.t output of pooling layer 2}, 4 \times 4 \text{ matrix}\\
+    \Delta \bm{S}^2_q, q \in [12]:& \text{ parital w.r.t output of pooling layer 2}, 4 \times 4 \text{ matrix}
 \end{align*}
 \begin{align*}
+    \intertext{
+    Note that $\bm{C}_{\sigma, q}^2(i, j)$ only contributes to $\bm{S}_{q}^2(\lfloor{i / 2}\rfloor, \lfloor{j / 2}\rfloor)$, based on $\bm{S}_{q}^2$ equation $\eqref{S2}$. Therefore:
+    }
     \Delta \bm{C}_{\sigma, q}^2(i, j)
-    &= \frac{\partial L}{\partial \bm{C}_{\sigma, q}^2(i, j)}\\
+    &= \frac{\partial L}{\partial \bm{C}_{\sigma, q}^2(i, j)}
+    \\
     &= \frac{\partial L}{\partial \bm{S}_{q}^2(\lfloor{i / 2}\rfloor, \lfloor{j / 2}\rfloor))}
     \cdot
-    \frac{\partial \bm{S}_{q}^2(\lfloor{i / 2}\rfloor, \lfloor{j / 2}\rfloor)}{\partial \bm{C}_{\sigma, q}^2(i, j)}\\
-    &= \Delta \bm{S}_{q}^2(\lfloor{i / 2}\rfloor, \lfloor{j / 2}\rfloor) \cdot \frac{\partial}{\partial \bm{C}_{\sigma, q}^2(i, j)}\left(\frac{1}{4}\sum_{u = 0}^1\sum_{v = 0}^1\bm{C}^2_{\sigma, q}\left(2\lfloor{i / 2}\rfloor + u, 2\lfloor{j / 2}\rfloor + v\right)\right)\\
-    &= \Delta \bm{S}_{q}^2(\lfloor{i / 2}\rfloor, \lfloor{j / 2}\rfloor) \cdot \frac{1}{4}\\
+    \frac{\partial \bm{S}_{q}^2(\lfloor{i / 2}\rfloor, \lfloor{j / 2}\rfloor)}{\partial \bm{C}_{\sigma, q}^2(i, j)}
+    \\
+    &= \Delta \bm{S}_{q}^2(\lfloor{i / 2}\rfloor, \lfloor{j / 2}\rfloor) \cdot \frac{\partial}{\partial \bm{C}_{\sigma, q}^2(i, j)}\left(\frac{1}{4}\sum_{u = 0}^1\sum_{v = 0}^1\bm{C}^2_{\sigma, q}\left(2\lfloor{i / 2}\rfloor + u, 2\lfloor{j / 2}\rfloor + v\right)\right)
+    \\
+    &\quad (\text{based on $\bm{S}_{q}^2$ equation } \eqref{S2})
+    \\
+    &= \Delta \bm{S}_{q}^2(\lfloor{i / 2}\rfloor, \lfloor{j / 2}\rfloor) \cdot \frac{1}{4}
+    \\
     &= \frac{1}{4}\Delta \bm{S}_{q}^2(\lfloor{i / 2}\rfloor, \lfloor{j / 2}\rfloor)
+    \numberthis \label{delta_C2_sigma}
 \end{align*}
 
 \item Calculating $\Delta \textbf{\textit{C}}_{q}^2$
@@ -602,16 +744,18 @@ Now, we will concatenate the vectorized matrices into one long matrix.
 \end{align*}
 \begin{align*}
     \Delta \bm{C}_{q}^2(i, j)
-    &= \frac{\partial L}{\partial \bm{C}_{q}^2(i, j)}\\
+    &= \frac{\partial L}{\partial \bm{C}_{q}^2(i, j)}
+    \\
     &= \frac{\partial L}{\partial \bm{C}_{\sigma, q}^2(i, j)}
     \cdot
-    \frac{\partial \bm{C}_{\sigma, q}^2(i, j)}{\partial \bm{C}_{q}^2(i, j)}\\
-    &= \Delta \bm{C}_{\sigma, q}^2(i, j)
-    \cdot
-    \frac{\partial \bm{C}_{\sigma, q}^2(i, j)}{\partial \bm{C}_{q}^2(i, j)}\\
+    \frac{\partial \bm{C}_{\sigma, q}^2(i, j)}{\partial \bm{C}_{q}^2(i, j)}
+    \\
     &= \Delta \bm{C}_{\sigma, q}^2(i, j)
     \cdot
     \bm{C}_{\sigma, q}^2(i, j)\left(1 - \bm{C}_{\sigma, q}^2(i, j)\right)
+    \numberthis \label{delta_C2}
+    \\
+    &\quad (\text{based on sigmoid derivative equation } \eqref{sigmoid_derivative})
 \end{align*}
 
 \item Calculating $\Delta \textbf{\textit{K}}_{p, q}^2$
@@ -621,39 +765,73 @@ Now, we will concatenate the vectorized matrices into one long matrix.
     \Delta \bm{C}_{q}^2, q \in [12]:& \text{ parital w.r.t output of convolutional layer 2} \\& \text{ before non-linearity}, 8 \times 8 \text{ matrix}
 \end{align*}
 \begin{align*}
+    \intertext{
+    Note that every kernel $\bm{K}_{p, q}^2(u, v)$ contributes to every output cell $\bm{C}_{q}^2(i, j)$, based on $\bm{C}_{q}^2$ equation $\eqref{C2_indexbased}$. Therefore:
+    }
     \Delta \bm{K}_{p, q}^2(u, v)
-    &= \frac{\partial L}{\bm{K}_{p, q}^2(u, v)}\\
+    &= \frac{\partial L}{\bm{K}_{p, q}^2(u, v)}
+    \\
     &= \sum_{i=0}^{7}\sum_{j=0}^{7}\frac{\partial L}{\partial\bm{C}_{q}^2(i, j)}
     \cdot
-    \frac{\partial\bm{C}_{q}^2(i, j)}{\partial\bm{K}_{p, q}^2(u, v)}\\
+    \frac{\partial\bm{C}_{q}^2(i, j)}{\partial\bm{K}_{p, q}^2(u, v)}
+    \\
     &= \sum_{i=0}^{7}\sum_{j=0}^{7}\Delta \bm{C}_{q}^2(i, j)\\
     &\quad\cdot
     \frac{\partial}{\partial\bm{K}_{p, q}^2(u, v)}
-    \left(\sum_{p = 0}^5\left(\sum_{\Tilde{u} = 0}^4\sum_{\Tilde{v} = 0}^4\bm{S}^1_p(i + \Tilde{u}, j + \Tilde{v})\bm{K}^2_{p, q}(\Tilde{u}, \Tilde{v})\right) + b^2_q\right)\\
+    \left(\sum_{p = 0}^5\left(\sum_{\Tilde{u} = 0}^3\sum_{\Tilde{v} = 0}^3\bm{S}^1_p(i + \Tilde{u}, j + \Tilde{v})\bm{K}^2_{p, q}(\Tilde{u}, \Tilde{v})\right) + b^2_q\right)
+    \\
+    &\quad (\text{based on $\bm{C}_{q}^2$ equation } \eqref{C2_indexbased})
+    \\
+    &= \sum_{i=0}^{7}\sum_{j=0}^{7}\Delta \bm{C}_{q}^2(i, j)
+    \cdot
+    \sum_{p = 0}^5\sum_{\Tilde{u} = 0}^3\sum_{\Tilde{v} = 0}^3\left(\frac{\partial}{\partial\bm{K}_{p, q}^2(u, v)}\bm{S}^1_p(i + \Tilde{u}, j + \Tilde{v})\bm{K}^2_{p, q}(\Tilde{u}, \Tilde{v})\right)
+    \\
+    \intertext{Note that:}
+    \frac{\partial}{\partial\bm{K}_{p, q}^2(u, v)}
+    &\bm{S}^1_p(i + \Tilde{u}, j + \Tilde{v})\bm{K}^2_{p, q}(\Tilde{u}, \Tilde{v})
+    =
+    \begin{cases}
+        \bm{S}^1_p(i + u, j + v) \quad \text{if } \Tilde{u} = u \text{ and } \Tilde{v} = v\\
+        0 \quad \text{otherwise}\\
+    \end{cases}
+    \intertext{Therefore:}
+    \Delta \bm{K}_{p, q}^2(u, v)
     &= \sum_{i=0}^{7}\sum_{j=0}^{7}\Delta \bm{C}_{q}^2(i, j) \cdot \bm{S}^1_p(i + u, j + v)\\
     &= \sum_{i=0}^{7}\sum_{j=0}^{7} \bm{S}^1_p(u + i, v + i) \cdot \Delta\bm{C}_{q}^2(i, j) \\
     \Rightarrow
     \Delta \bm{K}_{p, q}^2 &= \bm{S}^1_p \star \Delta\bm{C}_{q}^2
+    \numberthis \label{delta_K2}
+    \\
+    &\quad (\text{based on correlation equation } \eqref{correlation})
 \end{align*}
 
-\item Calculating $b^2_q$
+\item Calculating $\Delta b^2_q$
 \begin{align*}
     \Delta b^2_q, q \in [12]:& \text{ bias}, 1 \times 1 \text{ scalar}\\
     \Delta \bm{C}_{q}^2, q \in [12]:& \text{ parital w.r.t output of convolutional layer 2} \\& \text{ before non-linearity}, 8 \times 8 \text{ matrix}
 \end{align*}
 \begin{align*}
+    \intertext{
+    Note that every bias $b^2_q$ contributes to every output cell $\bm{C}_{q}^2(i, j)$, based on $\bm{C}_{q}^2$ equation $\eqref{C2_indexbased}$. Therefore:
+    }
     \Delta b^2_q
-    &= \frac{\partial L}{\partial b^2_q}\\
+    &= \frac{\partial L}{\partial b^2_q}
+    \\
     &= \sum_{i=0}^{7}\sum_{j=0}^{7}\frac{\partial L}{\partial\bm{C}_{q}^2(i, j)}
     \cdot
-    \frac{\partial\bm{C}_{q}^2(i, j)}{\partial b^2_q}\\
+    \frac{\partial\bm{C}_{q}^2(i, j)}{\partial b^2_q}
+    \\
     &= \sum_{i=0}^{7}\sum_{j=0}^{7}\Delta \bm{C}_{q}^2(i, j)\\
     &\quad\cdot
     \frac{\partial}{\partial b^2_q}
-    \left(\sum_{p = 0}^5\left(\sum_{\Tilde{u} = 0}^4\sum_{\Tilde{v} = 0}^4\bm{S}^1_p(i + \Tilde{u}, j + \Tilde{v})\bm{K}^2_{p, q}(\Tilde{u}, \Tilde{v})\right) + b^2_q\right)\\
+    \left(\sum_{p = 0}^5\left(\sum_{\Tilde{u} = 0}^3\sum_{\Tilde{v} = 0}^3\bm{S}^1_p(i + \Tilde{u}, j + \Tilde{v})\bm{K}^2_{p, q}(\Tilde{u}, \Tilde{v})\right) + b^2_q\right)
+    \\
+    &\quad (\text{based on $\bm{C}_{q}^2$ equation } \eqref{C2_indexbased})
+    \\
     &= \sum_{i=0}^{7}\sum_{j=0}^{7}\Delta \bm{C}_{q}^2(i, j)
     \cdot 1\\
     &= \sum_{i=0}^{7}\sum_{j=0}^{7}\Delta \bm{C}_{q}^2(i, j)
+    \numberthis \label{delta_b2}
 \end{align*}
 \end{itemize}
 
@@ -663,21 +841,43 @@ Now, we will concatenate the vectorized matrices into one long matrix.
 \begin{align*}
     \Delta\bm{S}^1_p, p \in [6]:& \text{ partial w.r.t. output of pooling layer 1}, 12 \times 12 \text{ matrix}\\
     \Delta \bm{C}_{q}^2, q \in [12]:& \text{ parital w.r.t output of convolutional layer 2} \\& \text{ before non-linearity}, 8 \times 8 \text{ matrix}\\
-    \bm{K}^2_{p, q}, p \in [6], q \in [12]:& \text{ kernel of convolutional layer 2}, 5 \times 5 \text{ matrix}\\
+    \bm{K}^2_{p, q}, p \in [6], q \in [12]:& \text{ kernel of convolutional layer 2}, 5 \times 5 \text{ matrix}
 \end{align*}
 \begin{align*}
+    \intertext{
+    Note that each input cell $\bm{S}_p^1(i, j)$ only contributes to output cells $\bm{C}_q^2(i - u, j - v)$ where $0 \leq u \leq 3$ and $0 \leq v \leq 3$, based on $\bm{C}^2_{q}$ equation $\eqref{C2_indexbased}$. Therefore:
+    }
     \Delta \bm{S}_p^1(i, j)
-    &= \frac{\partial L}{\partial \bm{S}_p^1(i, j)}\\
-    &= \sum_{q=0}^{11}\sum_{u=0}^{4}\sum_{v=0}^{4}
+    &= \frac{\partial L}{\partial \bm{S}_p^1(i, j)}
+    \\
+    &= \sum_{q=0}^{11}\sum_{u=0}^{3}\sum_{v=0}^{3}
     \frac{\partial L}{\partial \bm{C}_q^2(i - u, j - v)}
     \cdot
-    \frac{\partial \bm{C}_q^2(i - u, j - v)}{\partial \bm{S}_p^1(i, j)}\\
-    &= \sum_{q=0}^{11}\sum_{u=0}^{4}\sum_{v=0}^{4}
+    \frac{\partial \bm{C}_q^2(i - u, j - v)}{\partial \bm{S}_p^1(i, j)}
+    \\
+    &= \sum_{q=0}^{11}\sum_{u=0}^{3}\sum_{v=0}^{3}
     \Delta \bm{C}_q^2(i - u, j - v)\\
     &\quad\cdot
     \frac{\partial}{\partial \bm{S}_p^1(i, j)}
-    \left(\sum_{p = 0}^5\left(\sum_{\Tilde{u} = 0}^4\sum_{\Tilde{v} = 0}^4\bm{S}^1_p(i - u +  \Tilde{u}, j - v + \Tilde{v})\bm{K}^2_{p, q}(\Tilde{u}, \Tilde{v})\right) + b^2_q\right)\\
-    &= \sum_{q=0}^{11}\sum_{u=0}^{4}\sum_{v=0}^{4}
+    \left(\sum_{p = 0}^5\left(\sum_{\Tilde{u} = 0}^3\sum_{\Tilde{v} = 0}^3\bm{S}^1_p(i - u +  \Tilde{u}, j - v + \Tilde{v})\bm{K}^2_{p, q}(\Tilde{u}, \Tilde{v})\right) + b^2_q\right)
+    \\
+    &\quad (\text{based on $\bm{C}^2_{q}$ equation } \eqref{C2_indexbased})
+    \\
+    &= \sum_{q=0}^{11}\sum_{u=0}^{3}\sum_{v=0}^{3}
+    \Delta \bm{C}_q^2(i - u, j - v)\\
+    &\quad\cdot
+    \sum_{p = 0}^5\sum_{\Tilde{u} = 0}^3\sum_{\Tilde{v} = 0}^3\left(\frac{\partial}{\partial \bm{S}_p^1(i, j)}\bm{S}^1_p(i - u +  \Tilde{u}, j - v + \Tilde{v})\bm{K}^2_{p, q}(\Tilde{u}, \Tilde{v})\right)
+    \\
+    \intertext{Note that:}
+    &\,\,\quad \frac{\partial}{\partial \bm{S}_p^1(i, j)}
+    \bm{S}^1_p(i - u +  \Tilde{u}, j - v + \Tilde{v})\bm{K}^2_{p, q}(\Tilde{u}, \Tilde{v})\\
+    &= \begin{cases}
+        \bm{K}^2_{p, q}(u, v) \quad \text{if } (i - u + \Tilde{u}) = i \text{ and } (j - v + \Tilde{v}) = v \Leftrightarrow \Tilde{u} = u \text { and } \Tilde{v} = v\\
+        0 \quad \text{otherwise}\\
+    \end{cases}
+    \intertext{Therefore:}
+    \Delta \bm{S}_p^1(i, j)
+    &= \sum_{q=0}^{11}\sum_{u=0}^{3}\sum_{v=0}^{3}
     \Delta \bm{C}_q^2(i - u, j - v)
     \cdot
     \bm{K}^2_{p, q}(u, v)\\
@@ -687,6 +887,8 @@ Now, we will concatenate the vectorized matrices into one long matrix.
     \Delta \bm{C}_q^2
     \ast
     \bm{K}^2_{p, q}
+    \numberthis \label{delta_S1}\\
+    &\quad (\text{based on convolution equation } \eqref{convolution})
 \end{align*}
 \end{itemize}
 
@@ -694,17 +896,36 @@ Now, we will concatenate the vectorized matrices into one long matrix.
 \begin{itemize}
 \item Calculating $\Delta \textbf{\textit{C}}_{\sigma, p}^1$
 \begin{align*}
+    \Delta \bm{C}_{p}^1, p \in [6]:& \text{ parital w.r.t output of convolutional layer 1} \\& \text{ before non-linearity}, 24 \times 24 \text{ matrix}\\
+    \Delta \bm{C}_{\sigma, p}^1, p \in [6]:& \text{ parital w.r.t output of convolutional layer 1} \\& \text{ after non-linearity}, 24 \times 24 \text{ matrix}\\
+    \bm{C}_{\sigma, p}^1, p \in [6]:& \text{ output of convolutional layer 1} \\& \text{ after non-linearity}, 24 \times 24 \text{ matrix}
+\end{align*}
+\begin{align*}
+    \intertext{
+    Note that $\bm{C}_{\sigma, p}^1(i, j)$ only contributes to $\bm{S}_{p}^1(\lfloor{i / 2}\rfloor, \lfloor{j / 2}\rfloor)$, based on $\bm{S}_{p}^1$ equation $\eqref{S1}$. Therefore:
+    }
     \Delta \bm{C}_{\sigma, p}^1(i, j)
-    &= \frac{\partial L}{\partial \bm{C}_{\sigma, p}^1(i, j)}\\
+    &= \frac{\partial L}{\partial \bm{C}_{\sigma, p}^1(i, j)}
+    \\
     &= \frac{\partial L}{\partial \bm{S}_{p}^1(\lfloor{i / 2}\rfloor, \lfloor{j / 2}\rfloor))}
     \cdot
-    \frac{\partial \bm{S}_{p}^1(\lfloor{i / 2}\rfloor, \lfloor{j / 2}\rfloor)}{\partial \bm{C}_{\sigma, p}^1(i, j)}\\
-    &= \Delta \bm{S}_{p}^1(\lfloor{i / 2}\rfloor, \lfloor{j / 2}\rfloor) \cdot \frac{\partial}{\partial \bm{C}_{\sigma, p}^1(i, j)}\left(\frac{1}{4}\sum_{u = 0}^1\sum_{v = 0}^1\bm{C}^1_{\sigma, p}\left(1\lfloor{i / 2}\rfloor + u, 1\lfloor{j / 2}\rfloor + v\right)\right)\\
+    \frac{\partial \bm{S}_{p}^1(\lfloor{i / 2}\rfloor, \lfloor{j / 2}\rfloor)}{\partial \bm{C}_{\sigma, p}^1(i, j)}
+    \\
+    &= \Delta \bm{S}_{p}^1(\lfloor{i / 2}\rfloor, \lfloor{j / 2}\rfloor) \cdot \frac{\partial}{\partial \bm{C}_{\sigma, p}^1(i, j)}\left(\frac{1}{4}\sum_{u = 0}^1\sum_{v = 0}^1\bm{C}^1_{\sigma, p}\left(2\lfloor{i / 2}\rfloor + u, 2\lfloor{j / 2}\rfloor + v\right)\right)
+    \\
+    &\quad (\text{based on $\bm{S}_{p}^1$ equation } \eqref{S1})
+    \\
     &= \Delta \bm{S}_{p}^1(\lfloor{i / 2}\rfloor, \lfloor{j / 2}\rfloor) \cdot \frac{1}{4}\\
     &= \frac{1}{4}\Delta \bm{S}_{p}^1(\lfloor{i / 2}\rfloor, \lfloor{j / 2}\rfloor)
+    \numberthis \label{delta_C1_sigma}
 \end{align*}
 
 \item Calculating $\Delta \textbf{\textit{C}}_{p}^1$
+\begin{align*}
+    \Delta \bm{C}_{p}^1, p \in [6]:& \text{ parital w.r.t output of convolutional layer 1} \\& \text{ before non-linearity}, 24 \times 24 \text{ matrix}\\
+    \Delta \bm{C}_{\sigma, p}^1, p \in [6]:& \text{ parital w.r.t output of convolutional layer 1} \\& \text{ after non-linearity}, 24 \times 24 \text{ matrix}\\
+    \bm{C}_{\sigma, p}^1, p \in [6]:& \text{ output of convolutional layer 1} \\& \text{ after non-linearity}, 24 \times 24 \text{ matrix}
+\end{align*}
 \begin{align*}
     \Delta \bm{C}_{p}^1(i, j)
     &= \frac{\partial L}{\partial \bm{C}_{p}^1(i, j)}\\
@@ -713,47 +934,90 @@ Now, we will concatenate the vectorized matrices into one long matrix.
     \frac{\partial \bm{C}_{\sigma, p}^1(i, j)}{\partial \bm{C}_{p}^1(i, j)}\\
     &= \Delta \bm{C}_{\sigma, p}^1(i, j)
     \cdot
-    \frac{\partial \bm{C}_{\sigma, p}^1(i, j)}{\partial \bm{C}_{p}^1(i, j)}\\
-    &= \Delta \bm{C}_{\sigma, p}^1(i, j)
-    \cdot
     \bm{C}_{\sigma, p}^1(i, j)\left(1 - \bm{C}_{\sigma, p}^1(i, j)\right)
+    \numberthis \label{delta_C1}
+    \\
+    &\quad (\text{based on sigmoid derivative equation } \eqref{sigmoid_derivative})
 \end{align*}
 
 \item Calculating $\Delta \textbf{\textit{K}}_{1, p}^1$
 \begin{align*}
+    \Delta \bm{K}^1_{1, p}, p \in [6]:& \text{ partial w.r.t kernel of convolutional layer 1}, 5 \times 5 \text{ matrix}\\
+    \bm{I}:& \text{ input of the CNN}, 28 \times 28 \text{ matrix}\\
+    \Delta \bm{C}_{p}^1, p \in [6]:& \text{ parital w.r.t output of convolutional layer 1} \\& \text{ before non-linearity}, 24 \times 24 \text{ matrix}
+\end{align*}
+\begin{align*}
+    \intertext{
+    Note that every kernel $\bm{K}_{1, p}^1(u, v)$ contributes to every output cell $\bm{C}_{p}^1(i, j)$, based on $\bm{C}_{p}^1$ equation $\eqref{C1_indexbased}$. Therefore:
+    }
     \Delta \bm{K}_{1, q}^1(u, v)
-    &= \frac{\partial L}{\bm{K}_{1, q}^1(u, v)}\\
+    &= \frac{\partial L}{\bm{K}_{1, q}^1(u, v)}
+    \\
     &= \sum_{i=0}^{23}\sum_{j=0}^{23}\frac{\partial L}{\partial\bm{C}_{p}^1(i, j)}
     \cdot
-    \frac{\partial\bm{C}_{p}^1(i, j)}{\partial\bm{K}_{1, q}^1(u, v)}\\
+    \frac{\partial\bm{C}_{p}^1(i, j)}{\partial\bm{K}_{1, q}^1(u, v)}
+    \\
     &= \sum_{i=0}^{23}\sum_{j=0}^{23}\Delta \bm{C}_{p}^1(i, j)\\
     &\quad\cdot
     \frac{\partial}{\partial\bm{K}_{1, q}^1(u, v)}
-    \left(\sum_{\Tilde{u} = 0}^4\sum_{\Tilde{v} = 0}^4\bm{I}(i + \Tilde{u}, j + \Tilde{v})\bm{K}^1_{1, q}(\Tilde{u}, \Tilde{v}) + b^1_p\right)\\
+    \left(\sum_{\Tilde{u} = 0}^4\sum_{\Tilde{v} = 0}^4\bm{I}(i + \Tilde{u}, j + \Tilde{v})\bm{K}^1_{1, q}(\Tilde{u}, \Tilde{v}) + b^1_p\right)
+    \\
+    &\quad (\text{based on $\bm{C}_{p}^1$ equation } \eqref{C1_indexbased})
+    \\
+    &= \sum_{i=0}^{23}\sum_{j=0}^{23}\Delta \bm{C}_{p}^1(i, j)
+    \cdot
+    \sum_{\Tilde{u} = 0}^4\sum_{\Tilde{v} = 0}^4\left(\frac{\partial}{\partial\bm{K}_{1, q}^1(u, v)}\bm{I}(i + \Tilde{u}, j + \Tilde{v})\bm{K}^1_{1, q}(\Tilde{u}, \Tilde{v})\right)
+    \\
+    \intertext{Note that:}
+    \frac{\partial}{\partial\bm{K}_{1, q}^1(u, v)}
+    &\bm{I}(i + \Tilde{u}, j + \Tilde{v})\bm{K}^1_{1, q}(\Tilde{u}, \Tilde{v})
+    =
+    \begin{cases}
+        \bm{I}(i + u, j + v) \quad \text{if } \Tilde{u} = u \text{ and } \Tilde{v} = v\\
+        0 \quad \text{otherwise}\\
+    \end{cases}
+    \intertext{Therefore:}
     &= \sum_{i=0}^{23}\sum_{j=0}^{23}\Delta \bm{C}_{p}^1(i, j) \cdot \bm{I}(i + u, j + v)\\
     &= \sum_{i=0}^{23}\sum_{j=0}^{23} \bm{I}(u + i, v + i) \cdot \Delta\bm{C}_{p}^1(i, j) \\
     \Rightarrow
     \Delta \bm{K}_{1, q}^1 &= \bm{I} \star \Delta\bm{C}_{p}^1
+    \numberthis \label{delta_K1}
+    \\
+    &\quad (\text{based on correlation equation } \eqref{correlation})
 \end{align*}
 
-\item Calculating $b^1_p$
+\item Calculating $\Delta b^1_p$
 \begin{align*}
+    \Delta b^1_p, p \in [6]:& \text{ bias}, 1 \times 1 \text{ scalar}\\
+    \Delta \bm{C}_{p}^1, p \in [6]:& \text{ parital w.r.t output of convolutional layer 1} \\& \text{ before non-linearity}, 24 \times 24 \text{ matrix}
+\end{align*}
+\begin{align*}
+    \intertext{
+    Note that every bias $b^1_p$ contributes to every output cell $\bm{C}_{p}^1(i, j)$, based on $\bm{C}_{p}^1$ equation $\eqref{C1_indexbased}$. Therefore:
+    }
     \Delta b^1_p
-    &= \frac{\partial L}{\partial b^1_p}\\
+    &= \frac{\partial L}{\partial b^1_p}
+    \\
     &= \sum_{i=0}^{23}\sum_{j=0}^{23}\frac{\partial L}{\partial\bm{C}_{p}^1(i, j)}
     \cdot
-    \frac{\partial\bm{C}_{p}^1(i, j)}{\partial b^1_p}\\
+    \frac{\partial\bm{C}_{p}^1(i, j)}{\partial b^1_p}
+    \\
     &= \sum_{i=0}^{23}\sum_{j=0}^{23}\Delta \bm{C}_{p}^1(i, j)\\
     &\quad\cdot
     \frac{\partial}{\partial b^1_p}
-    \left(\sum_{\Tilde{u} = 0}^4\sum_{\Tilde{v} = 0}^4\bm{I}(i + \Tilde{u}, j + \Tilde{v})\bm{K}^1_{1, q}(\Tilde{u}, \Tilde{v}) + b^1_p\right)\\
+    \left(\sum_{\Tilde{u} = 0}^4\sum_{\Tilde{v} = 0}^4\bm{I}(i + \Tilde{u}, j + \Tilde{v})\bm{K}^1_{1, q}(\Tilde{u}, \Tilde{v}) + b^1_p\right)
+    \\
+    &\quad (\text{based on $\bm{C}_{p}^1$ equation } \eqref{C1_indexbased})
+    \\
     &= \sum_{i=0}^{23}\sum_{j=0}^{23}\Delta \bm{C}_{p}^1(i, j) \cdot 1\\
     &= \sum_{i=0}^{23}\sum_{j=0}^{23}\Delta \bm{C}_{p}^1(i, j)
+    \numberthis \label{delta_b1}
 \end{align*}
 
 \end{itemize}
 
-\subsection{Update of Parameters}
+\subsection{Parameters Update}
+Once we have the partial derivative with respect to each parameter being learned, we can perform \textbf{gradient descent} by adjusting these parameters in the negative gradient direction.
 \begin{align*}
     \textbf{\textit{K}}_{1, p}^1 &\leftarrow \textbf{\textit{K}}_{1, p}^1 - \alpha \cdot \Delta \textbf{\textit{K}}_{1, p}^1
     \\
@@ -768,7 +1032,35 @@ Now, we will concatenate the vectorized matrices into one long matrix.
     \vec{b} &\leftarrow \vec{b} - \alpha \cdot \Delta \vec{b}
 \end{align*}
 
-\subsection*{References}
+\section{Implementation}
+The implementation in Python of this paper is available on \href{https://github.com/nganvu/VanillaCNN}{Github} at:
+\begin{center}
+    \url{https://github.com/nganvu/VanillaCNN}
+\end{center}
+
+This implementation follows the derivation above as much as possible and therefore it is not optimized. It takes about 14 hours to go through all $60,000$ training data points in the MNIST data set (i.e. 14 hours / epoch). After letting my implementation run for one epoch, I got an accuracy of 0.10 (not better than random guess), even though the loss is consistently decreasing (especially at the beginning, before starting to slow down), which means the parameters are indeed going in the negative gradient direction of loss.
+
+To investigate why this is the case, I used Keras, an API optimized for building and training deep learning models, to create a CNN that has the exact same architecture but runs a lot faster. After 1 epoch, the accuracy achieved by the Keras CNN is also just 0.10. This means that my implementation does not perform worse than the implementation of Keras, at least for one epoch. After 10 epochs, however, the accuracy is around 0.88 and still increasing. This suggests that I can let my implementation run for several days to see if the accuracy improves over a long period of time.
+
+Below are several ideas I have to continue improving this project:
+\begin{itemize}
+    \item Parallelize the computation of individual training data points, as they are completely independent of one another.
+    \item Replace the sigmoid function in the Fully Connected Layer with the softmax function, which is often used for categorical predictions like with MNIST.
+    \item Implement better variations of gradient descent (e.g. incorporating momentum, adjusting learning rate over time, etc.)
+    \item Write unit tests to ensure each mathematical operation was implemented correctly.
+\end{itemize}
+
+\section*{References}
 Zhang, Zhifei. "Derivation of Backpropagation in
 Convolutional Neural Network (CNN)". \textit{University of Tennessee, Knoxvill, TN} (October 18, 2016).
+\\
+\\
+While inspired by the paper above, this paper:
+\begin{itemize}
+    \item Provides more mathematical background for CNN.
+    \item Explains every step of the derivation, especially in the Back Propagation section.
+    \item Uses a very rigorous indexing scheme (and as a side effect, arrives at different formulas for some variables), allowing all formulas to be translated directly to code.
+    \item Is accompanied by executable code that closely follows the derivation.
+\end{itemize}
+
 \end{document}
