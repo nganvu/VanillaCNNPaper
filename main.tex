@@ -76,6 +76,7 @@
 
 \begin{document}
 \maketitle
+\tableofcontents
 
 \section{Introduction}
 \subsection{What is a Convolutional Neural Network?}
@@ -329,7 +330,7 @@ On the other hand:
 \end{align*}
 Equating the two equations, we have:
 $
--\frac{\sigma'{(x)}}{\sigma^2{(x)}} &= \frac{\sigma{(x)} - 1}{\sigma{(x)}}
+-\frac{\sigma'{(x)}}{\sigma^2{(x)}} = \frac{\sigma{(x)} - 1}{\sigma{(x)}}
 $
 \begin{align*}
 \Leftrightarrow \sigma'{(x)} &= (\sigma{(x)})(1 - \sigma{(x)})
@@ -350,7 +351,7 @@ The Convolutional Neural Network that we will use in this paper is described in 
 
 \section{Deriving Feed Forward and Back Propagation}
 \subsection{Parameters Initialization}
-\subsubsection{Convolutional Layer 1}
+\subsubsection{Convolutional Layer 1: $\textbf{\textit{K}}^1_{1,p}$ and $b^1_p$}
 $\forall p \in [6]$, $\bm{K}^1_{1,p}$ is a $(5 \times 5)$ matrix and $b^1_p$ is a $(1 \times 1)$ scalar, initialized as:
 \begin{align*}
     \bm{K}^1_{1,p} &\sim U\left(\pm \sqrt{\frac{6}{(1 + 6) \times 5^2}}\right)
@@ -359,7 +360,7 @@ $\forall p \in [6]$, $\bm{K}^1_{1,p}$ is a $(5 \times 5)$ matrix and $b^1_p$ is 
     b^1_p &= 0
     \numberthis
 \end{align*}
-\subsubsection{Convolutional Layer 2}
+\subsubsection{Convolutional Layer 2: $\textbf{\textit{K}}^2_{p,q}$ and $b^2_q$}
 $\forall p \in [6], q \in [12]$, $\bm{K}^2_{p,q}$ is a $(5 \times 5)$ matrix and $b^2_q$ is a $(1 \times 1)$ scalar, initialized as:
 \begin{align*}
     \bm{K}^2_{p,q} &\sim U\left(\pm \sqrt{\frac{6}{(6 + 12) \times 5^2}}\right)
@@ -368,7 +369,7 @@ $\forall p \in [6], q \in [12]$, $\bm{K}^2_{p,q}$ is a $(5 \times 5)$ matrix and
     b^2_q &= 0
     \numberthis
 \end{align*}
-\subsubsection{Fully Connected Layer}
+\subsubsection{Fully Connected Layer: $\textbf{\textit{W}}$ and $\vec{b}$}
 $\bm{W}$ is a $(10 \times 192)$ matrix and $\vec{b}$ is a $(10 \times 1)$ scalar, initialized as:
 \begin{align*}
     \bm{W} &\sim U\left(\pm \sqrt{\frac{6}{192 + 10}}\right)
